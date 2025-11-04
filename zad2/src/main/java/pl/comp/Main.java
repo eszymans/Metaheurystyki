@@ -42,18 +42,6 @@ public class Main {
         analyzeParameters1D(x1_1D, x2_1D, expectedMax1D, expectedX1D, k_1D);
     }
 
-    // --- funkcje testowe ---
-    public static double func1D(double x) {
-        return x * Math.sin(10 * Math.PI * x) + 1;
-    }
-
-    public static double func2D(double x, double y) {
-        return 8 * Math.exp(-Math.pow(x + 12, 2) - Math.pow(y + 12, 2))
-                + 9 / (1 + Math.pow(x + 12, 2) + Math.pow(y - 12, 2))
-                + 20 / (Math.pow(Math.cosh(x - 12), 2) + Math.pow(Math.cosh(y + 12), 2))
-                + 176 / ((Math.pow(x - 12, 2) + 2 + Math.exp(-x + 12)) * (Math.exp(y - 12) + 2 + Math.exp(-y + 12)));
-    }
-
     // --- eksperymenty ---
     private static void runMultiple1D(double T0, double alpha, int M, double k,
                                       double x1, double x2, double expectedMax, double expectedX) {
@@ -108,16 +96,7 @@ public class Main {
                     List<Double> wyniki = new ArrayList<>();
                     long totalTime = 0;
 
-                    for (int run = 0; run < 5; run++) {
-                        long start = System.nanoTime();
-                        algorSA sa = new algorSA(T0, alpha, M, k);
-                        double resultX = sa.algorithm(x1, x2);
-                        double resultVal = sa.func(resultX);
-                        long end = System.nanoTime();
-
-                        wyniki.add(resultVal);
-                        totalTime += (end - start);
-                    }
+                    totalTime = getTotalTime(x1, x2, k, T0, alpha, M, wyniki, totalTime);
 
                     double avgF = srednia(wyniki);
                     double stdF = odchylenie(wyniki, avgF);
@@ -129,6 +108,20 @@ public class Main {
                 }
             }
         }
+    }
+
+    private static long getTotalTime(double x1, double x2, double k, double T0, double alpha, int M, List<Double> wyniki, long totalTime) {
+        for (int run = 0; run < 5; run++) {
+            long start = System.nanoTime();
+            algorSA sa = new algorSA(T0, alpha, M, k);
+            double resultX = sa.algorithm(x1, x2);
+            double resultVal = sa.func(resultX);
+            long end = System.nanoTime();
+
+            wyniki.add(resultVal);
+            totalTime += (end - start);
+        }
+        return totalTime;
     }
 
     private static double srednia(List<Double> arr) {

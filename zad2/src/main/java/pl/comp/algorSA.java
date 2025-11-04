@@ -13,9 +13,9 @@ public class algorSA {
     private static final Random rand = new Random();
 
     public algorSA(double t0, double alfa, int m, double k) {
-        T0 = t0;
+        this.T0 = t0;
         this.alpha = alfa;
-        M = m;
+        this.M = m;
         this.k = k;
     }
 
@@ -27,10 +27,10 @@ public class algorSA {
 
     // 2D: przykładowa funkcja (przykład z Twojego oryginalnego kodu) - zwraca wartość (maxymalizujemy)
     public double func(double x, double y) {
-        return 8 * Math.exp(-Math.pow(x + 12, 2) - Math.pow(y + 12, 2))
-                + 9 / (1 + Math.pow(x + 12, 2) + Math.pow(y - 12, 2))
-                + 20 / (Math.pow(Math.cosh(x - 12), 2) + Math.pow(Math.cosh(y + 12), 2))
-                + 176 / ((Math.pow(x - 12, 2) + 2 + Math.exp(-x + 12)) * (Math.exp(y - 12) + 2 + Math.exp(-y + 12)));
+        return 8 * Math.exp(-getPlusPow(x) - getPlusPow(y))
+                + 9 / (1 + getPlusPow(x) + getMinusPow(y))
+                + 20 / (getXCosh(x) + getYCosh(y))
+                + 176 / ((getExp(x,12) + 2 + getExp(12, x)) * (getExp(y, 12) + 2 + getExp(12, y)));
     }
 
     private double losowySasiad(double s, double s1, double s2, double T) {
@@ -40,7 +40,7 @@ public class algorSA {
 
     // zakres rozwiazania s: [x1;x2],
     public double algorithm(double x1, double x2){
-        double x = x1 + (x2 - x1)*rand.nextDouble();  // wybierac x (rozwiazanie) losowe
+        double x = getaDouble(x1, x2);  // wybierac x (rozwiazanie) losowe
         double T = T0;
         double bestX = x;
         double bestVal = func(x);
@@ -62,7 +62,7 @@ public class algorSA {
                 bestVal = func(x);
             }
 
-            T = T * alpha;
+            T *= alpha;
         }
         return bestX;
     }
@@ -70,8 +70,8 @@ public class algorSA {
     // zakres rozwiazania s : [x1;x2]
     // zakres rozwiazania y : [y1;y2]
     public double[] algorithm(double x1, double x2, double y1, double y2){
-        double x = x1 + (x2 - x1)*rand.nextDouble();
-        double y = y1 + (y2 - y1)*rand.nextDouble();
+        double x = getaDouble(x1, x2);
+        double y = getaDouble(y1, y2);
         double bestX = x, bestY = y;
         double bestVal = func(x, y);
 
@@ -80,7 +80,7 @@ public class algorSA {
         for(int i = 0; i <= M; i++) {
             double xLosowySasiad = Math.max(x1, Math.min(x2, losowySasiad(x, x1, x2, T)));
             double yLosowySasiad = Math.max(y1, Math.min(y2, losowySasiad(y, y1, y2, T)));
-            double roznica= func(xLosowySasiad, yLosowySasiad) -  func(x, y);
+            double roznica = func(xLosowySasiad, yLosowySasiad) -  func(x, y);
 
             if (roznica > 0) {
                 x = xLosowySasiad;
@@ -92,7 +92,7 @@ public class algorSA {
                     y = yLosowySasiad;
                 }
             }
-            T = T * alpha;
+            T *= alpha;
 
             if (func(x, y) > bestVal) {
                 bestX = x;
@@ -102,5 +102,29 @@ public class algorSA {
 
         }
         return new double[]{bestX, bestY};
+    }
+
+    private static double getaDouble(double n1, double n2) {
+        return n1 + (n2 - n1) * rand.nextDouble();
+    }
+
+    private static double getMinusPow(double n) {
+        return Math.pow(n - 12, 2);
+    }
+
+    private static double getPlusPow(double n) {
+        return Math.pow(n + 12, 2);
+    }
+
+    private double getYCosh(double y) {
+        return Math.pow(Math.cosh(y + 12), 2);
+    }
+
+    private static double getXCosh(double x) {
+        return Math.pow(Math.cosh(x - 12), 2);
+    }
+
+    private double getExp(double x, double y) {
+        return Math.exp(x - y);
     }
 }
