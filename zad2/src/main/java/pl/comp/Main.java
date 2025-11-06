@@ -42,7 +42,8 @@ public class Main {
         analyzeParameters1D(x1_1D, x2_1D, expectedMax1D, k_1D);
 
         System.out.println("\n\n=== Analiza wpływu parametrów (2D) ===");
-        analyzeParameters2D(x1_2D, x2_2D, y1_2D, y2_2D, expectedMax1D, k_1D);
+        // POPRAWKA: Użyto parametrów 2D (w oryginale były błędnie 1D)
+        analyzeParameters2D(x1_2D, x2_2D, y1_2D, y2_2D, expectedMax2D, k_2D);
     }
 
     // --- eksperymenty ---
@@ -51,7 +52,12 @@ public class Main {
         for (int i = 1; i <= 5; i++) {
             long start = System.nanoTime();
             algorSA sa = new algorSA(T0, alpha, M, k);
-            double resultX = sa.algorithm(x1, x2);
+
+            // ZMIANA: algorithm() zwraca teraz tablicę [bestX, iterFound]
+            double[] result = sa.algorithm(x1, x2);
+            double resultX = result[0];
+            double iterFound = result[1];
+
             double resultVal = sa.func(resultX);
             long end = System.nanoTime();
 
@@ -59,8 +65,9 @@ public class Main {
             double xError = Math.abs(resultX - expectedX);
             double timeMs = (end - start) / 1e6;
 
-            System.out.printf("Run %d: x = %.6f, f(x) = %.6f, Δf = %.8f, Δx = %.8f, time = %.2f ms%n",
-                    i, resultX, resultVal, error, xError, timeMs);
+            // ZMIANA: Dodano wydruk iteracji, w której znaleziono wynik
+            System.out.printf("Run %d: x = %.6f, f(x) = %.6f, Δf = %.8f, Δx = %.8f, time = %.2f ms, iter = %.0f%n",
+                    i, resultX, resultVal, error, xError, timeMs, iterFound);
         }
     }
 
@@ -70,7 +77,11 @@ public class Main {
         for (int i = 1; i <= 5; i++) {
             long start = System.nanoTime();
             algorSA sa = new algorSA(T0, alpha, M, k);
+
+            // ZMIANA: algorithm() zwraca teraz tablicę [bestX, bestY, iterFound]
             double[] result = sa.algorithm(x1, x2, y1, y2);
+            double iterFound = result[2]; // Odczyt iteracji
+
             double resultVal = sa.func(result[0], result[1]);
             long end = System.nanoTime();
 
@@ -79,8 +90,9 @@ public class Main {
             double yError = Math.abs(result[1] - expectedY);
             double timeMs = (end - start) / 1e6;
 
-            System.out.printf("Run %d: x = %.6f, y = %.6f, f(x,y) = %.6f, Δf = %.8f, Δx = %.8f, Δy = %.8f, time = %.2f ms%n",
-                    i, result[0], result[1], resultVal, error, xError, yError, timeMs);
+            // ZMIANA: Dodano wydruk iteracji, w której znaleziono wynik
+            System.out.printf("Run %d: x = %.6f, y = %.6f, f(x,y) = %.6f, Δf = %.8f, Δx = %.8f, Δy = %.8f, time = %.2f ms, iter = %.0f%n",
+                    i, result[0], result[1], resultVal, error, xError, yError, timeMs, iterFound);
         }
     }
 
@@ -90,79 +102,103 @@ public class Main {
         double[] alpha_values = {0.9, 0.95, 0.99, 0.999};
         int[] M_values = {100, 500, 1000};
 
-        System.out.printf("%8s %8s %8s %15s %15s %15s %15s%n",
-                "T0", "alpha", "M", "Śr. czas [ms]", "Śr. f(x)", "Śr. |Δf|", "Odchylenie");
+        // ZMIANA: Dodano kolumnę "Śr. iter."
+        System.out.printf("%8s %8s %8s %15s %15s %15s %15s %15s%n",
+                "T0", "alpha", "M", "Śr. czas [ms]", "Śr. f(x)", "Śr. |Δf|", "Odchylenie", "Śr. iter.");
 
         for (double T0 : T0_values) {
             for (double alpha : alpha_values) {
                 for (int M : M_values) {
                     List<Double> wyniki = new ArrayList<>();
+                    List<Double> iteracje = new ArrayList<>(); // ZMIANA: Lista na iteracje
                     long totalTime = 0;
 
-                    totalTime = getTotalTime1D(x1, x2, k, T0, alpha, M, wyniki, totalTime);
+                    // ZMIANA: Przekazanie listy iteracji do metody pomocniczej
+                    totalTime = getTotalTime1D(x1, x2, k, T0, alpha, M, wyniki, iteracje, totalTime);
 
                     double avgF = srednia(wyniki);
                     double stdF = odchylenie(wyniki, avgF);
                     double avgTime = (totalTime / 5.0) / 1_000_000.0; // w ms
                     double diff = Math.abs(expectedMax - avgF);
+                    double avgIter = srednia(iteracje); // ZMIANA: Obliczenie średniej iteracji
 
-                    System.out.printf("%8.1f %8.3f %8d %15.2f %15.5f %15.5f %15.5f%n",
-                            T0, alpha, M, avgTime, avgF, diff, stdF);
+                    // ZMIANA: Dodano avgIter do wydruku
+                    System.out.printf("%8.1f %8.3f %8d %15.2f %15.5f %15.5f %15.5f %15.0f%n",
+                            T0, alpha, M, avgTime, avgF, diff, stdF, avgIter);
                 }
             }
         }
     }
 
-    private static long getTotalTime1D(double x1, double x2, double k, double T0, double alpha, int M, List<Double> wyniki, long totalTime) {
+    // ZMIANA: Sygnatura metody przyjmuje listę iteracji
+    private static long getTotalTime1D(double x1, double x2, double k, double T0, double alpha, int M, List<Double> wyniki, List<Double> iteracje, long totalTime) {
         for (int run = 0; run < 5; run++) {
             long start = System.nanoTime();
             algorSA sa = new algorSA(T0, alpha, M, k);
-            double resultX = sa.algorithm(x1, x2);
+
+            // ZMIANA: Odczyt tablicy [bestX, iterFound]
+            double[] result = sa.algorithm(x1, x2);
+            double resultX = result[0];
+            double iterFound = result[1];
+
             double resultVal = sa.func(resultX);
             long end = System.nanoTime();
 
             wyniki.add(resultVal);
+            iteracje.add(iterFound); // ZMIANA: Zapisanie liczby iteracji
             totalTime += (end - start);
         }
         return totalTime;
     }
 
-    private static void analyzeParameters2D(double x1, double x2, double y1, double y2,double expectedMax, double k){
+    private static void analyzeParameters2D(double x1, double x2, double y1, double y2, double expectedMax, double k) {
         double[] T0_values = {1, 5, 50, 100};
         double[] alpha_values = {0.9, 0.95, 0.99, 0.999};
         int[] M_values = {100, 500, 1000};
 
-        System.out.printf("%8s %8s %8s %15s %15s %15s %15s%n",
-                "T0", "alpha", "M", "Śr. czas [ms]", "Śr. f(x,y)", "Śr. |Δf|", "Odchylenie");
+        // ZMIANA: Dodano kolumnę "Śr. iter."
+        System.out.printf("%8s %8s %8s %15s %15s %15s %15s %15s%n",
+                "T0", "alpha", "M", "Śr. czas [ms]", "Śr. f(x,y)", "Śr. |Δf|", "Odchylenie", "Śr. iter.");
+
         for (double T0 : T0_values) {
             for (double alpha : alpha_values) {
                 for (int M : M_values) {
                     List<Double> wyniki = new ArrayList<>();
+                    List<Double> iteracje = new ArrayList<>(); // ZMIANA: Lista na iteracje
                     long totalTime = 0;
 
-                    totalTime = getTotalTime2D(x1, x2, y1, y2, k, T0, alpha, M, wyniki, totalTime);
+                    // ZMIANA: Przekazanie listy iteracji
+                    totalTime = getTotalTime2D(x1, x2, y1, y2, k, T0, alpha, M, wyniki, iteracje, totalTime);
 
                     double avgF = srednia(wyniki);
                     double stdF = odchylenie(wyniki, avgF);
                     double avgTime = (totalTime / 5.0) / 1_000_000.0; // w ms
                     double diff = Math.abs(expectedMax - avgF);
+                    double avgIter = srednia(iteracje); // ZMIANA: Obliczenie średniej iteracji
 
-                    System.out.printf("%8.1f %8.3f %8d %15.2f %15.5f %15.5f %15.5f%n",
-                            T0, alpha, M, avgTime, avgF, diff, stdF);
+                    // ZMIANA: Dodano avgIter do wydruku
+                    System.out.printf("%8.1f %8.3f %8d %15.2f %15.5f %15.5f %15.5f %15.0f%n",
+                            T0, alpha, M, avgTime, avgF, diff, stdF, avgIter);
                 }
             }
         }
     }
 
-    private static long getTotalTime2D(double x1, double x2, double y1, double y2, double k, double T0, double alpha, int M, List<Double> wyniki, long totalTime) {
+    // ZMIANA: Sygnatura metody przyjmuje listę iteracji
+    private static long getTotalTime2D(double x1, double x2, double y1, double y2, double k, double T0, double alpha, int M, List<Double> wyniki, List<Double> iteracje, long totalTime) {
         for (int run = 0; run < 5; run++) {
             long start = System.nanoTime();
             algorSA sa = new algorSA(T0, alpha, M, k);
+
+            // ZMIANA: Odczyt tablicy [bestX, bestY, iterFound]
             double[] result = sa.algorithm(x1, x2, y1, y2);
+            double iterFound = result[2];
+
             double resultVal = sa.func(result[0], result[1]);
             long end = System.nanoTime();
 
             wyniki.add(resultVal);
+            iteracje.add(iterFound); // ZMIANA: Zapisanie liczby iteracji
             totalTime += (end - start);
         }
         return totalTime;
@@ -170,12 +206,14 @@ public class Main {
 
 
     private static double srednia(List<Double> arr) {
+        if (arr == null || arr.isEmpty()) return 0;
         double s = 0;
         for (double v : arr) s += v;
         return s / arr.size();
     }
 
     private static double odchylenie(List<Double> arr, double mean) {
+        if (arr == null || arr.isEmpty()) return 0;
         double s = 0;
         for (double v : arr) s += Math.pow(v - mean, 2);
         return Math.sqrt(s / arr.size());

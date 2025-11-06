@@ -39,11 +39,12 @@ public class algorSA {
     }
 
     // zakres rozwiazania s: [x1;x2],
-    public double algorithm(double x1, double x2){
+    public double[] algorithm(double x1, double x2){
         double x = getaDouble(x1, x2);  // wybierac x (rozwiazanie) losowe
         double T = T0;
         double bestX = x;
         double bestVal = func(x);
+        double iteracjaZnalezieniaBest = 0;
 
         for (int i = 0; i <= M; i++) {
             double xLosowySasiad = Math.max(x1, Math.min(x2, losowySasiad(x, x1, x2, T)));
@@ -60,11 +61,12 @@ public class algorSA {
             if (func(x) > bestVal) {
                 bestX = x;
                 bestVal = func(x);
+                iteracjaZnalezieniaBest = i;
             }
 
             T *= alpha;
         }
-        return bestX;
+        return new double[]{bestX, iteracjaZnalezieniaBest};
     }
 
     // zakres rozwiazania s : [x1;x2]
@@ -72,6 +74,7 @@ public class algorSA {
     public double[] algorithm(double x1, double x2, double y1, double y2){
         double x = getaDouble(x1, x2);
         double y = getaDouble(y1, y2);
+        double iteracjaZnalezieniaBest = 0;
         double bestX = x, bestY = y;
         double bestVal = func(x, y);
 
@@ -98,10 +101,11 @@ public class algorSA {
                 bestX = x;
                 bestY = y;
                 bestVal = func(x, y);
+                iteracjaZnalezieniaBest = i;
             }
 
         }
-        return new double[]{bestX, bestY};
+        return new double[]{bestX, bestY, iteracjaZnalezieniaBest};
     }
 
     private static double getaDouble(double n1, double n2) {
