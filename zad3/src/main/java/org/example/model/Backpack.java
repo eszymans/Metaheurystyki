@@ -18,4 +18,8 @@ public class Backpack {
     public List<Item> getItems() {
         return items;
     }
+
+    public int size(){
+        return items.size();
+    }
 }

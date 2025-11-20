@@ -1,4 +1,6 @@
-package org.example.model;
+package org.example;
+
+import org.example.model.Item;
 
 import java.io.BufferedReader;
 import java.io.FileReader;

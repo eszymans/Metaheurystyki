@@ -3,7 +3,7 @@ package org.example.model;
 import java.util.Arrays;
 import java.util.Random;
 
-public class Individual {
+public class Individual implements Comparable<Individual> {
     private boolean[] genes;
     private int fitness = -1;
     private int weight = -1;
@@ -49,12 +49,12 @@ public class Individual {
         return copy;
     }
 
-    public int CompareTo(Individual other) {
-        return Integer.compare(other.getFitness(), this.getFitness());
-    }
-
     public String toString() {
         return "Individual{fitness=" + fitness + ", weight=" + weight + ", genes=" + Arrays.toString(genes) + "}";
     }
 
+    @Override
+    public int compareTo(Individual o) {
+        return Integer.compare(o.getFitness(), this.getFitness());
+    }
 }

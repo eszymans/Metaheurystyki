@@ -2,9 +2,9 @@ package org.example.model;
 
 public class Item {
 
-    private int weight;
-    private int value;
-    private String name;
+    private final int weight;
+    private final int value;
+    private final String name;
 
     public Item(String name, int weight, int value) {
         this.name = name;
