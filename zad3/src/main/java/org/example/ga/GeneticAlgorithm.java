@@ -6,6 +6,8 @@ import org.example.ga.selection.SelectionStrategy;
 import org.example.model.Backpack;
 import org.example.model.Individual;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Random;
 
 public class GeneticAlgorithm {
@@ -20,6 +22,10 @@ public class GeneticAlgorithm {
 
     private final int popSize;
     private final double pc;
+
+    private Individual worstSolution;
+    private double mean;
+    private List<Double> avgHistory = new ArrayList<>();
 
     public GeneticAlgorithm(
             Backpack backpack,
@@ -44,6 +50,7 @@ public class GeneticAlgorithm {
     }
 
     public void initializeRandom() {
+        this.avgHistory.clear();
         for (int i = 0; i < popSize; i++) {
             Individual ind = new Individual(backpack.size());
             ind.randomize(rnd);
@@ -55,6 +62,7 @@ public class GeneticAlgorithm {
 
     public Individual run(int generation) {
         initializeRandom();
+        avgHistory.add(population.getMean());
         for (int gen = 0; gen < generation; gen++) {
             Population newPop = new Population(popSize);
             while (newPop.size() < popSize) {
@@ -84,6 +92,8 @@ public class GeneticAlgorithm {
                 if (newPop.size() < popSize) {
                     newPop.add(child2);
                 }
+
+                avgHistory.add(population.getMean());
             }
 
             newPop.sortByFitness();
@@ -93,6 +103,20 @@ public class GeneticAlgorithm {
         }
 
         population.sortByFitness();
+        this.worstSolution = population.getWorst();
+        this.mean = population.getMean();
         return population.getBest();
+    }
+
+    public Individual getWorstSolution() {
+        return worstSolution;
+    }
+
+    public List<Double> getAvgHistory() {
+        return avgHistory;
+    }
+
+    public double getMean(){
+        return mean;
     }
 }

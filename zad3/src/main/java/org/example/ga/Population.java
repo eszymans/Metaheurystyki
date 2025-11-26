@@ -34,4 +34,17 @@ public class Population {
         return population.getFirst();
     }
 
+    public Individual getWorst() {
+        sortByFitness();
+        return population.getLast();
+    }
+
+    public double getMean(){
+        double sum = 0.0;
+        for (Individual ind : population) {
+            sum += ind.getFitness();
+        }
+        return sum / population.size();
+    }
+
 }
