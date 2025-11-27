@@ -54,7 +54,6 @@ public class GeneticAlgorithm {
     }
 
     public void initializeRandom() {
-        // WAŻNE: Czyścimy wszystko przed startem
         this.population.getPopulation().clear();
         this.avgHistory.clear();
         this.bestHistory.clear();
@@ -62,7 +61,6 @@ public class GeneticAlgorithm {
         for (int i = 0; i < popSize; i++) {
             Individual ind = new Individual(backpack.size());
             ind.randomize(rnd);
-            repair.repair(ind);
             evaluator.evaluate(ind);
             population.add(ind);
         }
@@ -71,7 +69,6 @@ public class GeneticAlgorithm {
     public Individual run(int generation) {
         initializeRandom();
 
-        // Zapisz stan początkowy (generacja 0)
         population.sortByFitness(); // Sortujemy, żeby getBest() był poprawny
         avgHistory.add(population.getMean());
         bestHistory.add((double) population.getBest().getFitness());
@@ -95,11 +92,11 @@ public class GeneticAlgorithm {
                 mutation.mutate(child1, rnd);
                 mutation.mutate(child2, rnd);
 
-                repair.repair(child1);
+                //repair.repair(child1);
                 evaluator.evaluate(child1);
                 if (newPop.size() < popSize) newPop.add(child1);
 
-                repair.repair(child2);
+                //repair.repair(child2);
                 evaluator.evaluate(child2);
                 if (newPop.size() < popSize) newPop.add(child2);
             }

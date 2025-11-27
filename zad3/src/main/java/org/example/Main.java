@@ -58,7 +58,6 @@ public class Main {
     private static void runFullExperiment(Backpack backpack) throws IOException {
         int[] populationSizes = {50, 100, 200};
         int[] iterations = {200, 500, 1000};
-        // Gęste parametry dla ładnych wykresów
         double[] crossoverProbs = {0.5, 0.6, 0.7, 0.8, 0.9, 1.0};
         double[] mutationProbs = {0.001, 0.01, 0.02, 0.05, 0.1};
 
@@ -92,11 +91,9 @@ public class Main {
             Individual best = ga.run(T);
 
             results.add(new Result(N, T, pc, pm, selectionName, crossoverName, best.getFitness(), (System.currentTimeMillis()-startTime)/(i+1), ga.getWorstSolution().getFitness()));
-
-            if (N == 200 && T == 1000 && Math.abs(pc - 0.8) < 0.001 && Math.abs(pm - 0.05) < 0.001) {
-                String filename = String.format(Locale.US, "wykresy/hist_%s_%s_Pc%.1f_Pm%.2f_run%d.csv", selectionName, crossoverName, pc, pm, i);
-                saveEvolutionHistory(ga, filename);
-            }
+            String filename = String.format(Locale.US, "wykresy/hist_%s_%s_N%d_T%d_Pc%.1f_Pm%.3f_run%d.csv",
+                    selectionName, crossoverName, N, T, pc, pm, i);
+            saveEvolutionHistory(ga, filename);
         }
         System.out.print(".");
     }
@@ -119,12 +116,10 @@ public class Main {
 
             int size = Math.min(avgHistory.size(), bestHistory.size());
             for (int i = 0; i < size; i++) {
-                if (i % 20 == 0 || i == size - 1) {
                     writer.printf(Locale.US, "%d;%.2f;%.2f%n",
                             i,
                             avgHistory.get(i),
                             bestHistory.get(i));
-                }
             }
         } catch (IOException e) { e.printStackTrace(); }
     }
