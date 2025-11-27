@@ -24,7 +24,7 @@ public class FitnessEvaluator {
                 totalFitness += items.get(i).getValue();
             }
         }
-        if (totalWeight < backpack.getCapacity())
+        if (totalWeight <= backpack.getCapacity())
             {
                 ind.setFitness(totalFitness);
             }

@@ -101,15 +101,11 @@ public class GeneticAlgorithm {
                 if (newPop.size() < popSize) newPop.add(child2);
             }
 
-            // --- ZMIANA KLUCZOWA ---
-            // Najpierw podmieniamy populację na nową...
+            newPop.sortByFitness();
+
             this.population.getPopulation().clear();
             this.population.getPopulation().addAll(newPop.getPopulation());
 
-            // ...potem sortujemy nową populację...
-            this.population.sortByFitness();
-
-            // ...i DOPIERO TERAZ zapisujemy statystyki TEGO NOWEGO pokolenia
             avgHistory.add(population.getMean());
             bestHistory.add((double) population.getBest().getFitness());
         }
