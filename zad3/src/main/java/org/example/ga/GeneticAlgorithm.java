@@ -25,7 +25,10 @@ public class GeneticAlgorithm {
 
     private Individual worstSolution;
     private double mean;
-    private List<Double> avgHistory = new ArrayList<>();
+
+    // Listy do przechowywania historii
+    private final List<Double> avgHistory = new ArrayList<>();
+    private final List<Double> bestHistory = new ArrayList<>();
 
     public GeneticAlgorithm(
             Backpack backpack,
@@ -46,11 +49,16 @@ public class GeneticAlgorithm {
         this.evaluator = new FitnessEvaluator(backpack);
         this.repair = new GreedyRepair(backpack);
         this.mutation = new Mutation(pm);
+        // Inicjalizacja ewaluatora (techniczna)
         this.evaluator.evaluate(new Individual(backpack.size()));
     }
 
     public void initializeRandom() {
+        // WAŻNE: Czyścimy wszystko przed startem
+        this.population.getPopulation().clear();
         this.avgHistory.clear();
+        this.bestHistory.clear();
+
         for (int i = 0; i < popSize; i++) {
             Individual ind = new Individual(backpack.size());
             ind.randomize(rnd);
@@ -62,9 +70,15 @@ public class GeneticAlgorithm {
 
     public Individual run(int generation) {
         initializeRandom();
+
+        // Zapisz stan początkowy (generacja 0)
+        population.sortByFitness(); // Sortujemy, żeby getBest() był poprawny
         avgHistory.add(population.getMean());
+        bestHistory.add((double) population.getBest().getFitness());
+
         for (int gen = 0; gen < generation; gen++) {
             Population newPop = new Population(popSize);
+
             while (newPop.size() < popSize) {
                 Individual parent1 = strategy.select(population, rnd);
                 Individual parent2 = strategy.select(population, rnd);
@@ -83,23 +97,24 @@ public class GeneticAlgorithm {
 
                 repair.repair(child1);
                 evaluator.evaluate(child1);
-                if (newPop.size() < popSize) {
-                    newPop.add(child1);
-                }
+                if (newPop.size() < popSize) newPop.add(child1);
 
                 repair.repair(child2);
                 evaluator.evaluate(child2);
-                if (newPop.size() < popSize) {
-                    newPop.add(child2);
-                }
-
-                avgHistory.add(population.getMean());
+                if (newPop.size() < popSize) newPop.add(child2);
             }
 
-            newPop.sortByFitness();
-
+            // --- ZMIANA KLUCZOWA ---
+            // Najpierw podmieniamy populację na nową...
             this.population.getPopulation().clear();
             this.population.getPopulation().addAll(newPop.getPopulation());
+
+            // ...potem sortujemy nową populację...
+            this.population.sortByFitness();
+
+            // ...i DOPIERO TERAZ zapisujemy statystyki TEGO NOWEGO pokolenia
+            avgHistory.add(population.getMean());
+            bestHistory.add((double) population.getBest().getFitness());
         }
 
         population.sortByFitness();
@@ -114,6 +129,10 @@ public class GeneticAlgorithm {
 
     public List<Double> getAvgHistory() {
         return avgHistory;
+    }
+
+    public List<Double> getBestHistory() {
+        return bestHistory;
     }
 
     public double getMean(){
