@@ -54,7 +54,6 @@ public class GeneticAlgorithm {
     }
 
     public void initializeRandom() {
-        this.population.getPopulation().clear();
         this.avgHistory.clear();
         this.bestHistory.clear();
 
@@ -103,11 +102,11 @@ public class GeneticAlgorithm {
 
             newPop.sortByFitness();
 
-            this.population.getPopulation().clear();
-            this.population.getPopulation().addAll(newPop.getPopulation());
-
             avgHistory.add(population.getMean());
             bestHistory.add((double) population.getBest().getFitness());
+
+            this.population.getPopulation().clear();
+            this.population.getPopulation().addAll(newPop.getPopulation());
         }
 
         population.sortByFitness();
