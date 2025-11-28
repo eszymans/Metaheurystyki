@@ -20,22 +20,27 @@ import java.util.Locale;
 public class Main {
 
     private static class Result {
-        final int popSize; final int iterations; final double crossProb; final double mutProb;
-        final String selection; final String crossover; final double bestFitness;
-        final long executionTime; final double worstFitness;
+        final int popSize;
+        final int iterations;
+        final double crossProb;
+        final double mutProb;
+        final String selection;
+        final String crossover;
+        final double bestFitness;
+        final long executionTime;
 
         public Result(int popSize, int iterations, double crossProb, double mutProb,
                       String selection, String crossover, double bestFitness,
-                      long executionTime, double worstFitness) {
+                      long executionTime) {
             this.popSize = popSize; this.iterations = iterations; this.crossProb = crossProb;
             this.mutProb = mutProb; this.selection = selection; this.crossover = crossover;
-            this.bestFitness = bestFitness; this.executionTime = executionTime; this.worstFitness = worstFitness;
+            this.bestFitness = bestFitness; this.executionTime = executionTime;
         }
 
         @Override
         public String toString() {
             return String.format(Locale.US, "%d;%d;%.3f;%.3f;%s;%s;%.0f;%d;%.0f",
-                    popSize, iterations, crossProb, mutProb, selection, crossover, bestFitness, executionTime, worstFitness);
+                    popSize, iterations, crossProb, mutProb, selection, crossover, bestFitness, executionTime);
         }
     }
 
@@ -90,7 +95,7 @@ public class Main {
             GeneticAlgorithm ga = new GeneticAlgorithm(backpack, N, pc, pm, selection, crossover, seed + i);
             Individual best = ga.run(T);
 
-            results.add(new Result(N, T, pc, pm, selectionName, crossoverName, best.getFitness(), (System.currentTimeMillis()-startTime)/(i+1), ga.getWorstSolution().getFitness()));
+            results.add(new Result(N, T, pc, pm, selectionName, crossoverName, best.getFitness(), (System.currentTimeMillis()-startTime)/(i+1)));
             String filename = String.format(Locale.US, "wykresy/hist_%s_%s_N%d_T%d_Pc%.1f_Pm%.3f_run%d.csv",
                     selectionName, crossoverName, N, T, pc, pm, i);
             saveEvolutionHistory(ga, filename);
@@ -116,7 +121,7 @@ public class Main {
 
             int size = Math.min(avgHistory.size(), bestHistory.size());
             for (int i = 0; i < size; i++) {
-                    writer.printf(Locale.US, "%d;%.2f;%.2f%n",
+                    writer.printf(Locale.US, "%d;%.2f;%.2f;%n",
                             i,
                             avgHistory.get(i),
                             bestHistory.get(i));
@@ -125,24 +130,18 @@ public class Main {
     }
 
     private static void runCustomConfiguration(Backpack backpack, Scanner scanner) {
-        System.out.println("\n--- KONFIGURACJA WŁASNA ---");
 
-        // 1. Pobieranie parametrów liczbowych
         System.out.print("Podaj rozmiar populacji (N): ");
         int N = scanner.nextInt();
 
         System.out.print("Podaj liczbę iteracji (T): ");
         int T = scanner.nextInt();
 
-        // Uwaga: Jeśli masz polski system, w konsoli wpisuj liczby z przecinkiem (np. 0,8),
-        // chyba że Scanner jest ustawiony na Locale.US.
         System.out.print("Podaj prawdopodobieństwo krzyżowania (Pc, np. 0.8): ");
         double pc = scanner.nextDouble();
-
         System.out.print("Podaj prawdopodobieństwo mutacji (Pm, np. 0.01): ");
         double pm = scanner.nextDouble();
 
-        // 2. Wybór operatorów
         System.out.println("\nWybierz metodę selekcji:");
         System.out.println("1. Turniej (Tournament)");
         System.out.println("2. Ruletka (Roulette)");
@@ -177,27 +176,22 @@ public class Main {
             crossName = "TwoPoint";
         }
 
-        // 3. Uruchomienie algorytmu
         System.out.println("\n--> Uruchamiam algorytm...");
         long startTime = System.currentTimeMillis();
 
-        // Używamy stałego ziarna (12345L) dla powtarzalności lub System.currentTimeMillis() dla losowości
         GeneticAlgorithm ga = new GeneticAlgorithm(backpack, N, pc, pm, selection, crossover, 12345L);
         Individual best = ga.run(T);
 
         long endTime = System.currentTimeMillis();
         long duration = endTime - startTime;
 
-        // 4. Wyświetlenie wyników
         System.out.println("--------------------------------------------------");
         System.out.println("ZAKOŃCZONO!");
         System.out.println("Najlepsza wartość (Fitness): " + best.getFitness());
         System.out.println("Waga plecaka: " + best.getWeight());
-        System.out.println("Najgorszy osobnik: " + ga.getWorstSolution().getFitness());
         System.out.println("Czas wykonania: " + duration + " ms");
         System.out.println("--------------------------------------------------");
 
-        // 5. Zapis historii do pliku (żebyś mógł zrobić z tego wykres)
         String filename = String.format(Locale.US, "wykresy/custom_%s_%s_Pc%.2f_Pm%.3f.csv",
                 selName, crossName, pc, pm);
 

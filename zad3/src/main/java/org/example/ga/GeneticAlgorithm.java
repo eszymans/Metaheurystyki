@@ -23,7 +23,6 @@ public class GeneticAlgorithm {
     private final int popSize;
     private final double pc;
 
-    private Individual worstSolution;
     private double mean;
 
     // Listy do przechowywania historii
@@ -49,7 +48,6 @@ public class GeneticAlgorithm {
         this.evaluator = new FitnessEvaluator(backpack);
         this.repair = new GreedyRepair(backpack);
         this.mutation = new Mutation(pm);
-        // Inicjalizacja ewaluatora (techniczna)
         this.evaluator.evaluate(new Individual(backpack.size()));
     }
 
@@ -110,14 +108,10 @@ public class GeneticAlgorithm {
         }
 
         population.sortByFitness();
-        this.worstSolution = population.getWorst();
         this.mean = population.getMean();
         return population.getBest();
     }
 
-    public Individual getWorstSolution() {
-        return worstSolution;
-    }
 
     public List<Double> getAvgHistory() {
         return avgHistory;
