@@ -10,16 +10,22 @@ public class ACO {
     private int numAnts;
 
     private double alpha, beta, evaporation, pRandom;
-    private int interations;
+    private int iterations;
 
     private int[] bestTourOrder;
     private double bestTourLength = Double.MAX_VALUE;
     private List<Double> historyBest = new ArrayList<>();
 
+    private List<Double> historyAvg = new ArrayList<>();
+    private List<Double> historyWorst = new ArrayList<>();
+
+    private double runAvg = 0.0;
+    private double runWorst = Double.MIN_VALUE;
+
     public ACO(List<Point> points, int numAnts, int interations, double alpha, double beta, double evaporation, double pRandom) {
         this.points = points;
         this.numAnts = numAnts;
-        this.interations = interations;
+        this.iterations = interations;
         this.alpha = alpha;
         this.beta = beta;
         this.evaporation = evaporation;
@@ -48,16 +54,39 @@ public class ACO {
             ants[i] = new Ant(n);
         }
 
-        for(int iter = 0; iter < interations; iter++){
+        double sumAllTours = 0.0;
+        int totalToursCount = 0;
+
+        for(int iter = 0; iter < iterations; iter++){
+
+            double iterBest = Double.MAX_VALUE;
+            double iterWorst = Double.MIN_VALUE;
+            double iterSum = 0.0;
+
             for(Ant ant : ants){
                 ant.visitCities(distMatrix, pheromones, alpha, beta, pRandom);
 
-                if(ant.getTourLength() < bestTourLength){
-                    bestTourLength = ant.getTourLength();
+                double length = ant.getTourLength();
+
+                if(length < iterBest) iterBest = length;
+                if(length > iterWorst) iterWorst = length;
+                iterSum += length;
+
+                if(length < bestTourLength){
+                    bestTourLength = length;
                     bestTourOrder = ant.getTour().clone();
                 }
+
+                if(length > runWorst) runWorst = length;
+
+                sumAllTours += length;
+                totalToursCount++;
             }
+
+            double iterAvg = iterSum / numAnts;
             historyBest.add(bestTourLength);
+            historyAvg.add(iterAvg);
+            historyWorst.add(iterWorst);
 
             for(int i = 0; i < n; i++){
                 for(int j = 0; j < n; j++){
@@ -80,6 +109,10 @@ public class ACO {
                 pheromones[tour[0]][tour[n-1]] += contribution;
             }
         }
+
+        if(totalToursCount > 0){
+            runAvg = sumAllTours / totalToursCount;
+        }
     }
 
 
@@ -93,5 +126,21 @@ public class ACO {
 
     public int[] getBestTourOrder() {
         return bestTourOrder;
+    }
+
+    public List<Double> getHistoryAvg() {
+        return historyAvg;
+    }
+
+    public List<Double> getHistoryWorst() {
+        return historyWorst;
+    }
+
+    public double getRunAvg() {
+        return runAvg;
+    }
+
+    public double getRunWorst() {
+        return runWorst;
     }
 }
